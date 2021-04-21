@@ -1,3 +1,5 @@
+# remember to poetry run pre-commit install after adding new repos 
+# TODO: understand how this magic works
 repos:
   - repo: https://gitlab.com/PyCQA/flake8
     rev: 3.8.3
