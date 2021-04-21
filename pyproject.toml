@@ -6,8 +6,9 @@ authors = ["jjuanramos <jjuanramos91@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-Flask = "^1.1.2"
 requests = "^2.25.1"
+fastapi = "^0.63.0"
+uvicorn = "^0.13.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
