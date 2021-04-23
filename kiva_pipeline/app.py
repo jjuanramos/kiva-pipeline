@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-import requests
+import httpx
 
 app = FastAPI()
 
@@ -7,19 +7,21 @@ BASE_URL = "https://api.kivaws.org/graphql?query="
 
 
 @app.get("/")
-def home() -> tuple:
-    return "Hello there!", 200
+async def home() -> dict:
+    return {
+        "message": "Hello world!"
+    }
 
 
 @app.get("/get_kiva_batch")
-def reroute_batch() -> dict:
+async def reroute_batch() -> dict:
     return {
         "message": "You need to provide a number such as /get_kiva_batch/2"
     }
 
 
 @app.get("/get_kiva_batch/{limit_number}")
-def get_kiva_batch(limit_number: int = 5) -> dict:
+async def get_kiva_batch(limit_number: int = 5) -> dict:
     batch_query = """
         query ($limit_number: Int)
         {
@@ -56,26 +58,27 @@ def get_kiva_batch(limit_number: int = 5) -> dict:
         "limit_number": limit_number
     }
 
-    r = requests.post(
-        BASE_URL,
-        json={
-            "query": batch_query,
-            "variables": variables
-        }
-    )
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            BASE_URL,
+            json={
+                "query": batch_query,
+                "variables": variables
+            }
+        )
 
     return r.json()
 
 
 @app.get("/get_kiva_item")
-def reroute_item() -> dict:
+async def reroute_item() -> dict:
     return {
         "message": "You need to provide an id such as /get_kiva_item/50000"
     }
 
 
 @app.get("/get_kiva_item/{id}")
-def get_kiva_item(id: int) -> dict:
+async def get_kiva_item(id: int) -> dict:
     item_query = """
         query($id: Int!)
         {
@@ -107,12 +110,13 @@ def get_kiva_item(id: int) -> dict:
         "id": id
     }
 
-    r = requests.post(
-        BASE_URL,
-        json={
-            "query": item_query,
-            "variables": variables
-        }
-    )
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            BASE_URL,
+            json={
+                "query": item_query,
+                "variables": variables
+            }
+        )
 
     return r.json()

@@ -1,48 +1,68 @@
-import requests
+import pytest
+from httpx import AsyncClient
+
+from kiva_pipeline.app import app
 
 
-def test_basic_response():
-    response = requests.get("http://127.0.0.1:8000/")
+client = AsyncClient(app=app, base_url="http://127.0.0.1:8000")
+
+
+@pytest.mark.asyncio
+async def test_root():
+    response = await client.get("/")
 
     assert response.status_code == 200
+    assert response.json() == {
+        "message": "Hello world!"
+    }
 
 
-def test_get_kiva_item_empty():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_item/")
+@pytest.mark.asyncio
+async def test_get_kiva_item_empty():
+    response = await client.get("/get_kiva_item/")
 
-    assert type(response.json()) == dict
-    assert "message" in response.json()
+    assert response.status_code == 200
+    assert response.json() == {
+        "message": "You need to provide an id such as /get_kiva_item/50000"
+    }
 
 
-def test_get_kiva_item_response_given_str():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_item/'s'")
+@pytest.mark.asyncio
+async def test_get_kiva_item_response_given_str_returns_error():
+    response = await client.get("/get_kiva_item/'s'")
 
-    assert type(response.json()) == dict
+    assert response.status_code == 422
     assert "detail" in response.json()
     assert response.json()\
         .get('detail')[0].get("msg") == "value is not a valid integer"
 
 
-def test_get_kiva_item_response_given_int():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_item/50000")
+@pytest.mark.asyncio
+async def test_get_kiva_item_response_given_int():
+    response = await client.get("http://127.0.0.1:8000/get_kiva_item/50000")
 
+    assert response.status_code == 200
     assert type(response.json()) == dict
     assert "detail" not in response.json()
     assert "data" in response.json()
 
 
-def test_get_kiva_batch_response_given_str():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_batch/'s'")
+@pytest.mark.asyncio
+async def test_get_kiva_batch_response_given_str():
+    response = await client.get("http://127.0.0.1:8000/get_kiva_batch/'s'")
 
+    assert response.status_code == 422
     assert type(response.json()) == dict
     assert "detail" in response.json()
     assert response.json()\
         .get('detail')[0].get("msg") == "value is not a valid integer"
 
 
-def test_get_kiva_batch_response_given_int():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_batch/5")
+@pytest.mark.asyncio
+async def test_get_kiva_batch_response_given_int():
+    response = await client.get("http://127.0.0.1:8000/get_kiva_batch/5")
 
+    assert response.status_code == 200
     assert type(response.json()) == dict
     assert "detail" not in response.json()
     assert "data" in response.json()
@@ -55,16 +75,20 @@ def test_get_kiva_batch_response_given_int():
     ) == 5
 
 
-def test_get_kiva_batch_response_given_empty():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_batch")
+@pytest.mark.asyncio
+async def test_get_kiva_batch_response_given_empty():
+    response = await client.get("http://127.0.0.1:8000/get_kiva_batch")
 
+    assert response.status_code == 200
     assert type(response.json()) == dict
     assert "message" in response.json()
 
 
-def test_get_kiva_batch_response_given_int_greater_than_twenty():
-    response = requests.get("http://127.0.0.1:8000/get_kiva_batch/30")
+@pytest.mark.asyncio
+async def test_get_kiva_batch_response_given_int_greater_than_twenty():
+    response = await client.get("http://127.0.0.1:8000/get_kiva_batch/30")
 
+    assert response.status_code == 200
     assert type(response.json()) == dict
     assert "detail" not in response.json()
     assert "data" in response.json()
